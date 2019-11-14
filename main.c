@@ -5,30 +5,35 @@
 #include <sys/time.h>
 
 // Returns a random value between -1 and 1
-double getRand() {
-    return (double) rand() * 2 / (double) (RAND_MAX) - 1;
+double getRand(unsigned int* seed) {
+    return (double) rand_r(seed) * 2 / (double) (RAND_MAX) - 1;
 }
 
 long double Calculate_Pi_Sequential(long long number_of_tosses) {
     unsigned int seed = (unsigned int) time(NULL);
-
     long long int number_in_circle = 0;
     for (int toss = 0; toss < number_of_tosses; toss++) {
-        double x = getRand();
-        double y = getRand();
-        double distance_squared = x*x + y*y;
+        long double x = getRand(&seed);
+        long double y = getRand(&seed);
+        long double distance_squared = x*x + y*y;
         if (distance_squared <= 1) number_in_circle++;
     }
-    return 4.0*number_in_circle/((double) number_of_tosses);
+    return 4*number_in_circle/((double) number_of_tosses);
 }
 
 long double Calculate_Pi_Parallel(long long number_of_tosses) {
-#pragma omp parallel num_threads(omp_get_max_threads())
+    long long int number_in_circle = 0;
+    #pragma omp parallel reduction(+:number_in_circle) num_threads(omp_get_max_threads())
     {
         unsigned int seed = (unsigned int) time(NULL) + (unsigned int) omp_get_thread_num();
-
+        for (int toss=0; toss<number_of_tosses / omp_get_max_threads(); toss++) {
+            long double x = getRand(&seed);
+            long double y = getRand(&seed);
+            long double distance_squared = x*x + y*y;
+            if (distance_squared <= 1) number_in_circle++;
+        } // end of for loop
     }
-    return 0;
+    return 4*number_in_circle/((double) number_of_tosses);
 }
 
 int main() {
