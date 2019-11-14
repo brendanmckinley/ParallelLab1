@@ -7,6 +7,14 @@
 #IncludeRegexTransform: 
 
 /Users/brendan/CLionProjects/BrendanMcKinleyParallelLab1/main.c
+stdlib.h
+-
 stdio.h
+-
+omp.h
+-
+time.h
+-
+sys/time.h
 -
 
