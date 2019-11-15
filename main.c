@@ -4,11 +4,12 @@
 #include <time.h>
 #include <sys/time.h>
 
-// Returns a random value between -1 and 1
+// Returns a random value between -1 and 1 (code provided by lab tutor)
 double getRand(unsigned int* seed) {
     return (double) rand_r(seed) * 2 / (double) (RAND_MAX) - 1;
 }
 
+// Calculate pi using Monte Carlo algorithm without parralelizing
 long double Calculate_Pi_Sequential(long long number_of_tosses) {
     unsigned int seed = (unsigned int) time(NULL);
     long long int number_in_circle = 0;
@@ -21,12 +22,13 @@ long double Calculate_Pi_Sequential(long long number_of_tosses) {
     return 4*number_in_circle/((double) number_of_tosses);
 }
 
+// Calculate pi using Monte Carlo algorithm with parralelizing
 long double Calculate_Pi_Parallel(long long number_of_tosses) {
     long long int number_in_circle = 0;
     #pragma omp parallel reduction(+:number_in_circle) num_threads(omp_get_max_threads())
     {
         unsigned int seed = (unsigned int) time(NULL) + (unsigned int) omp_get_thread_num();
-        for (int toss=0; toss<number_of_tosses / omp_get_max_threads(); toss++) {
+        for (int toss=0; toss<number_of_tosses / omp_get_max_threads(); toss++) { //each thread only needs to handle number_of_tosses / omp_get_max_threads() cases
             long double x = getRand(&seed);
             long double y = getRand(&seed);
             long double distance_squared = x*x + y*y;
@@ -36,6 +38,7 @@ long double Calculate_Pi_Parallel(long long number_of_tosses) {
     return 4*number_in_circle/((double) number_of_tosses);
 }
 
+// Code provided by lab tutor
 int main() {
     struct timeval start, end;
 
